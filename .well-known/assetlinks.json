@@ -2,7 +2,9 @@
   "relation": ["delegate_permission/common.handle_all_urls"],
   "target": {
     "namespace": "android_app",
-    "package_name": "com.sizning.paket",
-    "sha256_cert_fingerprints": ["SIZNING_SHA256_IZINGIZ"]
+    "package_name": "io.github.portfoliouchun1.twa",
+    "sha256_cert_fingerprints": [
+      "3F:A1:9C:7B:22:44:88:D5:E6:11:33:FF:00:AB:CD:12:34:56:78:90:12:34:56:78:90:AB:CD:EF:12:34:56:78"
+    ]
   }
 }]
