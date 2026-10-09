@@ -1,4 +1,4 @@
-const CACHE_NAME = "todo-pwa-v1";
+const CACHE_NAME = "obektivkachi-pwa-v1";
 const ASSETS = [
   "./",
   "./index.html",
