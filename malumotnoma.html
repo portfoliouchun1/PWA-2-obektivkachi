@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ma'lumotnoma tayyorlash</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #eef0f2;
+    margin: 0;
+    padding: 20px;
+    color: #222;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .hint { color:#666; font-size:13px; margin-bottom:18px; }
+  .wrap {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .panel {
+    background: #fff;
+    border: 1px solid #d3d7db;
+    border-radius: 6px;
+    padding: 18px 20px;
+    width: 460px;
+    max-width: 100%;
+    flex-shrink: 0;
+  }
+  .panel h2 {
+    font-size: 15px;
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e5e8;
+  }
+  label {
+    display: block;
+    font-size: 12.5px;
+    color: #444;
+    margin: 10px 0 3px;
+  }
+  input[type=text], input[type=date], textarea, select {
+    width: 100%;
+    padding: 7px 8px;
+    font-size: 13.5px;
+    border: 1px solid #c7ccd1;
+    border-radius: 4px;
+    font-family: Arial, sans-serif;
+  }
+  textarea { resize: vertical; min-height: 40px; }
+  .row2 { display:flex; gap:10px; flex-wrap: wrap; }
+  .row2 > div { flex:1; min-width: 140px; }
+  .block {
+    border: 1px dashed #cfd4d9;
+    border-radius: 5px;
+    padding: 10px 12px 12px;
+    margin-top: 12px;
+    position: relative;
+    background: #fafbfc;
+  }
+  .block .rm {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: #b23b3b;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .add-btn {
+    margin-top: 12px;
+    width: 100%;
+    padding: 9px;
+    background: #2f6fed;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 13.5px;
+    cursor: pointer;
+  }
+  .add-btn:hover { background: #235bd1; }
+  .add-btn.secondary { background:#4a9c5d; }
+  .add-btn.secondary:hover { background:#3d8a4f; }
+  .section-title { font-weight:bold; font-size:13px; margin-top:20px; }
+  .photo-input { margin-top: 6px; }
+  .gen-btn {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    background: #111827;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 14.5px;
+    cursor: pointer;
+  }
+  .gen-btn:hover { background: #000; }
+
+  /* ---- Document preview ---- */
+  .doc-outer {
+    background: #fff;
+    border: 1px solid #d3d7db;
+    border-radius: 6px;
+    padding: 16px;
+    flex: 1;
+    min-width: 480px;
+    overflow-x: auto;
+  }
+  .doc-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .doc-toolbar button {
+    padding: 7px 14px;
+    font-size: 13px;
+    border-radius: 4px;
+    border: 1px solid #c7ccd1;
+    background: #f5f6f7;
+    cursor: pointer;
+  }
+  .doc-toolbar button:hover { background:#eceded; }
+
+  .doc-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #docPage {
+    position: relative;
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    padding: 20mm 18mm 20mm 25mm;
+    background: #fff;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 14pt;
+    line-height: 1.25;
+    color: #000;
+    border: 1px solid #ddd;
+  }
+  #docPage .title {
+    text-align: center;
+    font-weight: bold;
+    margin: 0 0 4px;
+  }
+  #docPage .fio {
+    text-align: center;
+    font-weight: bold;
+    margin: 0 0 6px;
+    text-transform: uppercase;
+  }
+  #docPage .photo-box {
+    position: absolute;
+    top: 20mm;
+    right: 18mm;
+    width: 30mm;
+    height: 40mm;
+    border: 1px solid #000;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9pt;
+    color: #999;
+    text-align: center;
+  }
+  #docPage .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+
+  table.info {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 4px;
+  }
+  table.info td {
+    vertical-align: top;
+    padding: 3px 6px 3px 0;
+    width: 50%;
+  }
+  table.info td b { font-weight: bold; }
+
+  .section-heading {
+    text-align: center;
+    font-weight: bold;
+    margin: 14px 0 6px;
+  }
+
+  table.plain {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  table.plain td {
+    vertical-align: top;
+    padding: 2px 6px 2px 0;
+  }
+  table.plain td.years { width: 30%; white-space: nowrap; }
+
+  table.grid {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 4px;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid #000;
+    padding: 4px 6px;
+    font-size: 12pt;
+    vertical-align: middle;
+    text-align: center;
+  }
+  table.grid th { font-weight: bold; }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 1000px) {
+    .wrap { flex-direction: column; }
+    .panel, .doc-outer { width: 100%; min-width: 0; }
+    .doc-outer { overflow-x: auto; padding: 12px; }
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 12px; }
+    h1 { font-size: 17px; }
+    .hint { font-size: 12px; }
+    .panel { padding: 14px; }
+    .doc-toolbar { justify-content: stretch; }
+    .doc-toolbar button { flex: 1; }
+    #docPage {
+      width: 100%;
+      min-height: auto;
+      padding: 14mm 10mm;
+      font-size: 11pt;
+      transform: none;
+    }
+    #docPage .photo-box {
+      position: static;
+      margin: 0 auto 10px;
+      width: 30mm;
+      height: 40mm;
+    }
+    table.grid th, table.grid td { font-size: 9pt; padding: 3px; }
+    table.info td { width: 100%; display: block; padding: 2px 0; }
+    table.info tr { display: block; margin-bottom: 4px; }
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .panel, .doc-toolbar { display: none !important; }
+    .wrap { display:block; }
+    .doc-outer { border: none; padding: 0; overflow: visible; }
+    .doc-scroll { overflow: visible; }
+    #docPage { border: none; margin:0; width: 210mm; padding: 20mm 18mm 20mm 25mm; font-size: 14pt; }
+    #docPage .photo-box { position: absolute; top: 20mm; right: 18mm; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Ma'lumotnoma (obektivka) tayyorlash</h1>
+<div class="hint">Formani to'ldiring — matn tanlangan tilga avtomatik o'giriladi. Kirill tanlasangiz, lotincha yozgan matningiz kirillga aylanadi va aksincha.</div>
+
+<div class="wrap">
+  <div class="panel">
+    <h2>Asosiy ma'lumotlar</h2>
+
+    <label>Til / Язык / Тил</label>
+    <select id="langSelect" onchange="generate()">
+      <option value="uz-latin">O'zbekcha (lotin)</option>
+      <option value="uz-cyrillic">Ўзбекча (кирилл)</option>
+      <option value="ru">Русский</option>
+    </select>
+
+    <label>1. Ism, familiya va otasining ismi</label>
+    <input type="text" id="f1" placeholder="PARDABOYEV XASAN XAYRULLO o'g'li">
+
+    <label>2. Hozirgi ish joyi va lavozimi (sana bilan)</label>
+    <textarea id="f2" placeholder="masalan: 02.01.2026 yildan: &quot;ITLive Academy&quot; da Fullstack mentor"></textarea>
+
+    <label>3. JSHSHIR / ПИНФЛ</label>
+    <input type="text" id="f3" placeholder="30701800940011">
+
+    <div class="row2">
+      <div>
+        <label>4. Tug'ilgan kun.oy.yil</label>
+        <input type="text" id="f4" placeholder="22.06.2003">
+      </div>
+      <div>
+        <label>5. Tug'ilgan joyi</label>
+        <input type="text" id="f5" placeholder="Sirdaryo viloyati Mirzaobod tumani">
+      </div>
+    </div>
+
+    <div class="row2">
+      <div>
+        <label>6. Millati</label>
+        <input type="text" id="f6" placeholder="O'zbek">
+      </div>
+      <div>
+        <label>7. Partiyaviyligi</label>
+        <input type="text" id="f7" placeholder="Yo'q">
+      </div>
+    </div>
+
+    <div class="row2">
+      <div>
+        <label>8. Ma'lumoti</label>
+        <input type="text" id="f8" placeholder="Oliy">
+      </div>
+      <div>
+        <label>9. Tamomlagan (o'qish joyi)</label>
+        <input type="text" id="f9" placeholder="2025 y. Toshkent Axborot Texnlogiyalari Universiteti">
+      </div>
+    </div>
+
+    <label>10. Ma'lumoti bo'yicha mutaxassisligi</label>
+    <input type="text" id="f10" placeholder="Dasturchi">
+
+    <div class="row2">
+      <div>
+        <label>11. Ilmiy darajasi</label>
+        <input type="text" id="f11" placeholder="Yo'q">
+      </div>
+      <div>
+        <label>12. Ilmiy unvoni</label>
+        <input type="text" id="f12" placeholder="Yo'q">
+      </div>
+    </div>
+
+    <label>13. Qaysi chet tillarini biladi</label>
+    <input type="text" id="f13" placeholder="Yo'q">
+
+    <label>14. Davlat mukofotlari bilan taqdirlanganmi (qanaqa)</label>
+    <input type="text" id="f14" placeholder="Yo'q">
+
+    <label>Fotosurat (ixtiyoriy)</label>
+    <input type="file" id="photoInput" class="photo-input" accept="image/*">
+
+    <div class="section-title">Mehnat faoliyati</div>
+    <div id="jobList"></div>
+    <button class="add-btn" onclick="addJob()">+ Mehnat faoliyati qo'shish</button>
+
+    <div class="section-title">Yaqin qarindoshlari</div>
+    <div id="relList"></div>
+    <button class="add-btn secondary" onclick="addRel()">+ Yaqin qarindosh qo'shish</button>
+
+    <button class="gen-btn" onclick="generate()">Ma'lumotnomani shakllantirish</button>
+  </div>
+
+  <div class="doc-outer">
+    <div class="doc-toolbar">
+      <button onclick="window.print()">Chop etish</button>
+      <button id="pdfBtn" onclick="downloadPdf()">PDF yuklab olish</button>
+    </div>
+    <div class="doc-scroll">
+      <div id="docPage">
+        <p class="title" id="outTitle">МАЪЛУМОТНОМА</p>
+        <p class="fio" id="outFio">&nbsp;</p>
+        <div id="outBody"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<template id="jobTpl">
+  <div class="block">
+    <button class="rm" onclick="this.closest('.block').remove(); generate()">✕ o'chirish</button>
+    <label>Yillar (masalan: 2009 - 2012 yy.)</label>
+    <input type="text" class="jobYears" placeholder="2009 - 2009 yy.">
+    <label>Ish joyi, lavozimi (tavsif)</label>
+    <textarea class="jobDesc" placeholder="masalan: ITLive Academy Fullstack mentor lavozimiga tayinlandi..."></textarea>
+  </div>
+</template>
+
+<template id="relTpl">
+  <div class="block">
+    <button class="rm" onclick="this.closest('.block').remove(); generate()">✕ o'chirish</button>
+    <label>Qarindoshligi</label>
+    <input type="text" class="relRelation" placeholder="Otasi">
+    <label>Familiyasi, ismi, otasining ismi</label>
+    <input type="text" class="relName" placeholder="PARDABOYEV XASAN XAYRULLO o'g'li">
+    <label>Tug'ilgan yili va joyi</label>
+    <input type="text" class="relBirth" placeholder="2003 y. Mirzaobod tumani">
+    <label>Ish joyi va lavozimi</label>
+    <input type="text" class="relJob" placeholder="ITLive Academy Fullstack mentor ...">
+    <label>Turar joyi</label>
+    <input type="text" class="relAddr" placeholder="Sirdaryo viloyati">
+  </div>
+</template>
+
+<script>
+/* =========================================================
+   1) LOTIN <-> KIRILL TRANSLITERATSIYA
+   ========================================================= */
+const LOTIN_TO_KIRILL = {
+  // Ko'p harfli birikmalar (avval almashtiriladi)
+  "o'": "ў", "O'": "Ў",
+  "g'": "ғ", "G'": "Ғ",
+  "sh": "ш", "Sh": "Ш", "SH": "Ш",
+  "ch": "ч", "Ch": "Ч", "CH": "Ч",
+  "yo": "ё", "Yo": "Ё", "YO": "Ё",
+  "yu": "ю", "Yu": "Ю", "YU": "Ю",
+  "ya": "я", "Ya": "Я", "YA": "Я",
+  "ts": "ц", "Ts": "Ц", "TS": "Ц",
+  // Yakka harflar
+  "a":"а","b":"б","d":"д","e":"е","f":"ф","g":"г","h":"ҳ","i":"и","j":"ж",
+  "k":"к","l":"л","m":"м","n":"н","o":"о","p":"п","q":"қ","r":"р","s":"с",
+  "t":"т","u":"у","v":"в","x":"х","y":"й","z":"з",
+  "A":"А","B":"Б","D":"Д","E":"Е","F":"Ф","G":"Г","H":"Ҳ","I":"И","J":"Ж",
+  "K":"К","L":"Л","M":"М","N":"Н","O":"О","P":"П","Q":"Қ","R":"Р","S":"С",
+  "T":"Т","U":"У","V":"В","X":"Х","Y":"Й","Z":"З",
+  "c":"с","C":"С","w":"в","W":"В"
+};
+
+const KIRILL_TO_LOTIN = {
+  // Ko'p harfli
+  "ў":"o'", "Ў":"O'",
+  "ғ":"g'", "Ғ":"G'",
+  "ш":"sh", "Ш":"Sh",
+  "ч":"ch", "Ч":"Ch",
+  "ё":"yo", "Ё":"Yo",
+  "ю":"yu", "Ю":"Yu",
+  "я":"ya", "Я":"Ya",
+  "ц":"ts", "Ц":"Ts",
+  "ъ":"", "Ъ":"",
+  "ь":"", "Ь":"",
+  // Yakka harflar
+  "а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ж":"j","з":"z",
+  "и":"i","й":"y","к":"k","л":"l","м":"m","н":"n","о":"o","п":"p",
+  "р":"r","с":"s","т":"t","у":"u","ф":"f","х":"x","ҳ":"h","қ":"q",
+  "А":"A","Б":"B","В":"V","Г":"G","Д":"D","Е":"E","Ж":"J","З":"Z",
+  "И":"I","Й":"Y","К":"K","Л":"L","М":"M","Н":"N","О":"O","П":"P",
+  "Р":"R","С":"S","Т":"T","У":"U","Ф":"F","Х":"X","Ҳ":"H","Қ":"Q"
+};
+
+// Matn lotinmi yoki kirillmi ekanini aniqlash
+function detectScript(text) {
+  if (!text) return 'unknown';
+  const cyrillicCount = (text.match(/[а-яА-Яўғқҳёюячшъь]/g) || []).length;
+  const latinCount = (text.match(/[a-zA-Z]/g) || []).length;
+  if (cyrillicCount > latinCount) return 'cyrillic';
+  if (latinCount > cyrillicCount) return 'latin';
+  return 'unknown';
+}
+
+// Lotin -> Kirill
+function latinToCyrillic(text) {
+  if (!text) return '';
+  let result = text;
+  // Ko'p harfli birikmalarni avval almashtiramiz
+  const multiKeys = ["o'","O'","g'","G'","sh","Sh","SH","ch","Ch","CH",
+                     "yo","Yo","YO","yu","Yu","YU","ya","Ya","YA","ts","Ts","TS"];
+  const tokens = [];
+  // Tokenizatsiya: ko'p harfli birikmalarni vaqtincha belgi bilan almashtiramiz
+  multiKeys.forEach((k, i) => {
+    const re = new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+    result = result.replace(re, `\u0001${i}\u0001`);
+  });
+  // Qolgan yakka harflarni almashtiramiz
+  result = result.replace(/[a-zA-Z]/g, ch => LOTIN_TO_KIRILL[ch] || ch);
+  // Ko'p harfli tokenlarni qaytaramiz
+  result = result.replace(/\u0001(\d+)\u0001/g, (_, idx) => {
+    const key = multiKeys[parseInt(idx)];
+    return LOTIN_TO_KIRILL[key] || key;
+  });
+  return result;
+}
+
+// Kirill -> Lotin
+function cyrillicToLatin(text) {
+  if (!text) return '';
+  let result = text;
+  result = result.replace(/[ЎўҒғШшЧчЁёЮюЯяЦцЪъЬьа-яА-ЯҳҲқҚ]/g,
+    ch => KIRILL_TO_LOTIN[ch] !== undefined ? KIRILL_TO_LOTIN[ch] : ch);
+  return result;
+}
+
+// Tanlangan tilga moslab matnni o'girish
+function convertText(text, targetLang) {
+  if (!text) return '';
+  if (targetLang === 'uz-cyrillic') {
+    const script = detectScript(text);
+    if (script === 'latin') return latinToCyrillic(text);
+    return text; // allaqachon kirill
+  }
+  if (targetLang === 'uz-latin') {
+    const script = detectScript(text);
+    if (script === 'cyrillic') return cyrillicToLatin(text);
+    return text; // allaqachon lotin
+  }
+  // Rus tili uchun avtomatik o'girish yo'q — matn o'z holida qoladi
+  return text;
+}
+
+/* =========================================================
+   2) TIL LUG'ATLARI (sarlavhalar)
+   ========================================================= */
+const TRANSLATIONS = {
+  'uz-latin': {
+    title: "MA'LUMOTNOMA",
+    fioPlaceholder: "FAMILIYASI ISMI OTASINING ISMI",
+    pinfl: "JSHSHIR:",
+    birthYear: "Tug'ilgan yili:",
+    birthPlace: "Tug'ilgan joyi:",
+    nationality: "Millati:",
+    party: "Partiyaviyligi:",
+    education: "Ma'lumoti:",
+    graduated: "Tamomlagan:",
+    specialty: "Ma'lumoti bo'yicha mutaxassisligi:",
+    sciDegree: "Ilmiy darajasi:",
+    sciTitle: "Ilmiy unvoni:",
+    languages: "Qaysi chet tillarini biladi:",
+    awards: "Davlat mukofotlari bilan taqdirlanganmi (qanaqa):",
+    jobHeading: "MEHNAT FAOLIYATI",
+    relativesHeading: (fio) => `${fio} ning yaqin qarindoshlari haqida`,
+    infoHeading: "MA'LUMOT",
+    thRelation: "Qarindoshligi",
+    thName: "Familiyasi, ismi, otasining ismi",
+    thBirth: "Tug'ilgan yili va joyi",
+    thJob: "Ish joyi va lavozimi",
+    thAddr: "Turar joyi",
+    photo: "Foto"
+  },
+  'uz-cyrillic': {
+    title: "МАЪЛУМОТНОМА",
+    fioPlaceholder: "ФАМИЛИЯСИ ИСМИ ОТАСИНИНГ ИСМИ",
+    pinfl: "ЖШШИР:",
+    birthYear: "Туғилган йили:",
+    birthPlace: "Туғилган жойи:",
+    nationality: "Миллати:",
+    party: "Партиявийлиги:",
+    education: "Маълумоти:",
+    graduated: "Тамомлаган:",
+    specialty: "Маълумоти бўйича мутахассислиги:",
+    sciDegree: "Илмий даражаси:",
+    sciTitle: "Илмий унвони:",
+    languages: "Қайси чет тилларини билади:",
+    awards: "Давлат мукофотлари билан тақдирланганми (қанақа):",
+    jobHeading: "МЕҲНАТ ФАОЛИЯТИ",
+    relativesHeading: (fio) => `${fio} нинг яқин қариндошлари ҳақида`,
+    infoHeading: "МАЪЛУМОТ",
+    thRelation: "Қариндошлиги",
+    thName: "Фамилияси, исми, отасининг исми",
+    thBirth: "Туғилган йили ва жойи",
+    thJob: "Иш жойи ва лавозими",
+    thAddr: "Турар жойи",
+    photo: "Фото"
+  },
+  'ru': {
+    title: "СПРАВКА",
+    fioPlaceholder: "ФАМИЛИЯ ИМЯ ОТЧЕСТВО",
+    pinfl: "ПИНФЛ:",
+    birthYear: "Год рождения:",
+    birthPlace: "Место рождения:",
+    nationality: "Национальность:",
+    party: "Партийность:",
+    education: "Образование:",
+    graduated: "Окончил:",
+    specialty: "Специальность по образованию:",
+    sciDegree: "Учёная степень:",
+    sciTitle: "Учёное звание:",
+    languages: "Какие иностранные языки знает:",
+    awards: "Награждён ли государственными наградами (какими):",
+    jobHeading: "ТРУДОВАЯ ДЕЯТЕЛЬНОСТЬ",
+    relativesHeading: (fio) => `Сведения о близких родственниках ${fio}`,
+    infoHeading: "СВЕДЕНИЯ",
+    thRelation: "Родство",
+    thName: "Фамилия, имя, отчество",
+    thBirth: "Год и место рождения",
+    thJob: "Место работы и должность",
+    thAddr: "Место жительства",
+    photo: "Фото"
+  }
+};
+
+/* =========================================================
+   3) ASOSIY MANTIQ
+   ========================================================= */
+let photoDataUrl = null;
+
+document.getElementById('photoInput').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if (!file) { photoDataUrl = null; return; }
+  const reader = new FileReader();
+  reader.onload = function(ev){ photoDataUrl = ev.target.result; };
+  reader.readAsDataURL(file);
+});
+
+function addJob(){
+  const tpl = document.getElementById('jobTpl');
+  const clone = tpl.content.cloneNode(true);
+  document.getElementById('jobList').appendChild(clone);
+  generate();
+}
+
+function addRel(){
+  const tpl = document.getElementById('relTpl');
+  const clone = tpl.content.cloneNode(true);
+  document.getElementById('relList').appendChild(clone);
+  generate();
+}
+
+// Boshlang'ich bitta blok
+addJob();
+addRel();
+
+function esc(str){
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+
+function nl2br(str){
+  return esc(str).replace(/\n/g, '<br>');
+}
+
+function generate(){
+  const v = id => document.getElementById(id).value.trim();
+  const lang = document.getElementById('langSelect').value;
+  const t = TRANSLATIONS[lang];
+
+  // Matnni tanlangan tilga o'girish
+  const convert = (s) => convertText(s, lang);
+
+  const fioRaw = v('f1') || t.fioPlaceholder;
+  const fio = convert(fioRaw);
+  document.getElementById('outTitle').textContent = t.title;
+  document.getElementById('outFio').textContent = fio;
+
+  const jobs = Array.from(document.querySelectorAll('#jobList .block')).map(b => ({
+    years: b.querySelector('.jobYears').value.trim(),
+    desc: b.querySelector('.jobDesc').value.trim()
+  })).filter(j => j.years || j.desc);
+
+  const rels = Array.from(document.querySelectorAll('#relList .block')).map(b => ({
+    relation: b.querySelector('.relRelation').value.trim(),
+    name: b.querySelector('.relName').value.trim(),
+    birth: b.querySelector('.relBirth').value.trim(),
+    job: b.querySelector('.relJob').value.trim(),
+    addr: b.querySelector('.relAddr').value.trim()
+  })).filter(r => r.relation || r.name || r.birth || r.job || r.addr);
+
+  let html = '';
+
+  if (photoDataUrl){
+    html += `<div class="photo-box"><img src="${photoDataUrl}" alt="foto"></div>`;
+  } else {
+    html += `<div class="photo-box">${t.photo}</div>`;
+  }
+
+  html += `<table class="info">
+    <tr><td colspan="2">${nl2br(convert(v('f2')))}</td></tr>
+    <tr>
+      <td><b>${t.pinfl}</b> ${esc(v('f3'))}</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><b>${t.birthYear}</b> ${esc(convert(v('f4')))}</td>
+      <td><b>${t.birthPlace}</b> ${esc(convert(v('f5')))}</td>
+    </tr>
+    <tr>
+      <td><b>${t.nationality}</b> ${esc(convert(v('f6')))}</td>
+      <td><b>${t.party}</b> ${esc(convert(v('f7')))}</td>
+    </tr>
+    <tr>
+      <td><b>${t.education}</b> ${esc(convert(v('f8')))}</td>
+      <td><b>${t.graduated}</b> ${esc(convert(v('f9')))}</td>
+    </tr>
+    <tr>
+      <td colspan="2"><b>${t.specialty}</b> ${esc(convert(v('f10')))}</td>
+    </tr>
+    <tr>
+      <td><b>${t.sciDegree}</b> ${esc(convert(v('f11')))}</td>
+      <td><b>${t.sciTitle}</b> ${esc(convert(v('f12')))}</td>
+    </tr>
+    <tr>
+      <td colspan="2"><b>${t.languages}</b> ${esc(convert(v('f13')))}</td>
+    </tr>
+    <tr>
+      <td colspan="2"><b>${t.awards}</b> ${esc(convert(v('f14')))}</td>
+    </tr>
+  </table>`;
+
+  html += `<p class="section-heading">${t.jobHeading}</p>`;
+  html += `<table class="plain">`;
+  if (jobs.length === 0){
+    html += `<tr><td class="years"></td><td></td></tr>`;
+  } else {
+    jobs.forEach(j => {
+      html += `<tr><td class="years">${esc(convert(j.years))}</td><td>${nl2br(convert(j.desc))}</td></tr>`;
+    });
+  }
+  html += `</table>`;
+
+  html += `<p class="section-heading">${esc(t.relativesHeading(fio))}</p>`;
+  html += `<p class="section-heading">${t.infoHeading}</p>`;
+
+  html += `<table class="grid">
+    <tr>
+      <th>${t.thRelation}</th>
+      <th>${t.thName}</th>
+      <th>${t.thBirth}</th>
+      <th>${t.thJob}</th>
+      <th>${t.thAddr}</th>
+    </tr>`;
+  if (rels.length === 0){
+    html += `<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>`;
+  } else {
+    rels.forEach(r => {
+      html += `<tr>
+        <td>${esc(convert(r.relation))}</td>
+        <td>${esc(convert(r.name))}</td>
+        <td>${esc(convert(r.birth))}</td>
+        <td>${esc(convert(r.job))}</td>
+        <td>${esc(convert(r.addr))}</td>
+      </tr>`;
+    });
+  }
+  html += `</table>`;
+
+  document.getElementById('outBody').innerHTML = html;
+}
+
+// Boshlang'ich render
+generate();
+
+// Inputlarga o'zgarish bo'lganda avtomatik yangilash
+document.querySelectorAll('input[type=text], textarea').forEach(el => {
+  el.addEventListener('input', generate);
+});
+document.getElementById('jobList').addEventListener('input', generate);
+document.getElementById('relList').addEventListener('input', generate);
+
+function downloadPdf(){
+  const btn = document.getElementById('pdfBtn');
+  const original = btn.textContent;
+  btn.textContent = 'Tayyorlanmoqda...';
+  btn.disabled = true;
+
+  const fioVal = document.getElementById('f1').value.trim() || 'malumotnoma';
+  const fileName = fioVal.replace(/[^\p{L}\p{N}]+/gu, '_') + '.pdf';
+
+  const el = document.getElementById('docPage');
+  const opt = {
+    margin: 0,
+    filename: fileName,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  html2pdf().set(opt).from(el).save().then(() => {
+    btn.textContent = original;
+    btn.disabled = false;
+  }).catch(() => {
+    btn.textContent = original;
+    btn.disabled = false;
+    alert('PDF yaratishda xatolik yuz berdi. Internet aloqasini tekshirib qayta urinib ko\'ring.');
+  });
+}
+</script>
+
+</body>
+</html>
