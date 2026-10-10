@@ -1,10 +1,10 @@
-const CACHE_NAME = "obektivkachi-pwa-v3";
+const CACHE_NAME = "obektivkachi-pwa-v4";
 const ASSETS = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./icons/logo.png",
-  "./icons/logo.png"
+  "./icons/logo2.png",
+  "./icons/logo2.png"
 ];
 
 // ===== O'rnatish =====
