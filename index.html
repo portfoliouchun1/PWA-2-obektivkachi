@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ma'lumotnoma tayyorlash</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="manifest" href="manifest.json">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
@@ -785,7 +787,7 @@ document.querySelectorAll('input[type=text], textarea').forEach(el => {
 document.getElementById('jobList').addEventListener('input', generate);
 document.getElementById('relList').addEventListener('input', generate);
 
-function downloadPdf(){
+async function downloadPdf() {
   const btn = document.getElementById('pdfBtn');
   const original = btn.textContent;
   btn.textContent = 'Tayyorlanmoqda...';
@@ -794,23 +796,168 @@ function downloadPdf(){
   const fioVal = document.getElementById('f1').value.trim() || 'malumotnoma';
   const fileName = fioVal.replace(/[^\p{L}\p{N}]+/gu, '_') + '.pdf';
 
-  const el = document.getElementById('docPage');
-  const opt = {
-    margin: 0,
-    filename: fileName,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
+  const source = document.getElementById('docPage');
 
-  html2pdf().set(opt).from(el).save().then(() => {
-    btn.textContent = original;
-    btn.disabled = false;
-  }).catch(() => {
-    btn.textContent = original;
-    btn.disabled = false;
-    alert('PDF yaratishda xatolik yuz berdi. Internet aloqasini tekshirib qayta urinib ko\'ring.');
+  // ===== 1) Klon yaratish =====
+  const clone = source.cloneNode(true);
+
+  // ===== 2) Klonni ekranda ko'rinadigan overlay ichiga joylashtirish =====
+  const overlay = document.createElement('div');
+  overlay.style.cssText = [
+    'position:fixed',
+    'top:0',
+    'left:0',
+    'width:794px',
+    'background:#ffffff',
+    'z-index:999999',
+    'padding:0',
+    'margin:0',
+    'overflow:visible',
+    'pointer-events:none'
+  ].join(';');
+
+  // Klon o'lchamlarini A4 pikselda qat'iy belgilash (96 dpi)
+  clone.style.width = '794px';
+  clone.style.minHeight = '1123px';
+  clone.style.margin = '0';
+  clone.style.padding = '75px 68px 75px 94px';
+  clone.style.background = '#ffffff';
+  clone.style.position = 'relative';
+  clone.style.transform = 'none';
+  clone.style.border = 'none';
+  clone.style.boxShadow = 'none';
+  clone.style.fontSize = '18.6px';
+  clone.style.lineHeight = '1.25';
+  clone.style.color = '#000';
+
+  // Foto joylashuvini klonda qayta tiklash
+  const photoBox = clone.querySelector('.photo-box');
+  if (photoBox) {
+    photoBox.style.position = 'absolute';
+    photoBox.style.top = '75px';
+    photoBox.style.right = '68px';
+    photoBox.style.width = '113px';
+    photoBox.style.height = '151px';
+  }
+
+  // Jadval chegaralarini klonda tiklash (mobil kartaga aylanishni bekor qilish)
+  clone.querySelectorAll('table.grid').forEach(tbl => {
+    tbl.style.display = 'table';
+    tbl.style.width = '100%';
+    tbl.style.borderCollapse = 'collapse';
+    tbl.style.border = 'none';
   });
+  clone.querySelectorAll('table.grid thead').forEach(th => {
+    th.style.display = 'table-header-group';
+  });
+  clone.querySelectorAll('table.grid tbody').forEach(tb => {
+    tb.style.display = 'table-row-group';
+  });
+  clone.querySelectorAll('table.grid tr').forEach(tr => {
+    tr.style.display = 'table-row';
+    tr.style.background = 'transparent';
+    tr.style.border = 'none';
+    tr.style.padding = '0';
+    tr.style.margin = '0';
+    tr.style.boxShadow = 'none';
+  });
+  clone.querySelectorAll('table.grid td, table.grid th').forEach(cell => {
+    cell.style.display = 'table-cell';
+    cell.style.width = 'auto';
+    cell.style.border = '1px solid #000';
+    cell.style.padding = '4px 6px';
+    cell.style.fontSize = '16px';
+    cell.style.textAlign = 'center';
+    cell.style.verticalAlign = 'middle';
+  });
+
+  // `::before` yorliqlarini olib tashlash uchun inline style ishlamaydi,
+  // shuning uchun klonni maxsus klass bilan belgilaymiz va CSS qo'shamiz
+  clone.classList.add('pdf-export-mode');
+
+  overlay.appendChild(clone);
+  document.body.appendChild(overlay);
+
+  // ===== 3) PDF eksport rejimi uchun CSS qo'shish =====
+  const styleEl = document.createElement('style');
+  styleEl.id = 'pdfExportStyle';
+  styleEl.textContent = `
+    .pdf-export-mode table.grid td::before { content: none !important; }
+    .pdf-export-mode table.info td { display: table-cell !important; width: 50% !important; }
+    .pdf-export-mode table.info tr { display: table-row !important; }
+  `;
+  document.head.appendChild(styleEl);
+
+  // ===== 4) Rasmlar yuklanishini kutish =====
+  const images = clone.querySelectorAll('img');
+  await Promise.all(Array.from(images).map(img => {
+    if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+    return new Promise(res => {
+      img.onload = res;
+      img.onerror = res;
+      setTimeout(res, 2000);
+    });
+  }));
+
+  // ===== 5) Qo'shimcha kutish (render tugashi uchun) =====
+  await new Promise(r => setTimeout(r, 200));
+
+  try {
+    // ===== 6) html2canvas =====
+    const canvas = await html2canvas(clone, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      width: 794,
+      height: clone.scrollHeight,
+      windowWidth: 794,
+      windowHeight: clone.scrollHeight,
+      scrollX: 0,
+      scrollY: 0,
+      x: 0,
+      y: 0,
+      logging: false
+    });
+
+    // ===== 7) Canvas bo'shligini tekshirish =====
+    if (!canvas.width || !canvas.height) {
+      throw new Error('Canvas bo\'sh yaratildi. Element ko\'rinmayapti.');
+    }
+
+    // ===== 8) PDF yaratish =====
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageW = 210;
+    const pageH = 297;
+    const imgH = (canvas.height * pageW) / canvas.width;
+
+    let heightLeft = imgH;
+    let position = 0;
+
+    pdf.addImage(imgData, 'JPEG', 0, position, pageW, imgH);
+    heightLeft -= pageH;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgH;
+      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, position, pageW, imgH);
+      heightLeft -= pageH;
+    }
+
+    pdf.save(fileName);
+  } catch (err) {
+    console.error('PDF xatosi:', err);
+    alert('PDF yaratishda xatolik: ' + (err.message || err));
+  } finally {
+    // ===== 9) Tozalash =====
+    if (document.body.contains(overlay)) document.body.removeChild(overlay);
+    const s = document.getElementById('pdfExportStyle');
+    if (s) s.remove();
+    btn.textContent = original;
+    btn.disabled = false;
+  }
 }
 </script>
 
