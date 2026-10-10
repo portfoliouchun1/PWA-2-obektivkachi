@@ -4,10 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ma'lumotnoma tayyorlash</title>
+<link rel="manifest" href="manifest.json">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<link rel="manifest" href="manifest.json">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -247,17 +246,9 @@
       height: 40mm;
     }
 
-    /* ===== Jadvalni kartaga aylantirish (faqat mobil) ===== */
-    table.grid {
-      border: none;
-      display: block;
-    }
-    table.grid thead {
-      display: none;
-    }
-    table.grid tbody {
-      display: block;
-    }
+    table.grid { border: none; display: block; }
+    table.grid thead { display: none; }
+    table.grid tbody { display: block; }
     table.grid tr {
       display: block;
       background: #ffffff;
@@ -268,9 +259,7 @@
       margin-bottom: 12px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
-    table.grid tr:nth-child(even) {
-      background: #fafbfc;
-    }
+    table.grid tr:nth-child(even) { background: #fafbfc; }
     table.grid td {
       display: block;
       width: 100%;
@@ -280,9 +269,7 @@
       font-size: 10.5pt;
       text-align: left;
     }
-    table.grid td:last-child {
-      border-bottom: none;
-    }
+    table.grid td:last-child { border-bottom: none; }
     table.grid td::before {
       content: attr(data-label);
       display: block;
@@ -293,10 +280,6 @@
       text-transform: uppercase;
       letter-spacing: 0.3px;
     }
-    table.grid td:empty::before,
-    table.grid td:has(> &nbsp;)::before {
-      display: none;
-    }
 
     table.info td { width: 100%; display: block; padding: 2px 0; }
     table.info tr { display: block; margin-bottom: 4px; }
@@ -305,33 +288,24 @@
   @media print {
     body { background: #fff; padding: 0; }
     .panel, .doc-toolbar { display: none !important; }
-    .wrap { display:block; }
+    .wrap { display: block; }
     .doc-outer { border: none; padding: 0; overflow: visible; }
     .doc-scroll { overflow: visible; }
-    #docPage { border: none; margin:0; width: 210mm; padding: 20mm 18mm 20mm 25mm; font-size: 14pt; }
-    #docPage .photo-box { position: absolute; top: 20mm; right: 18mm; margin: 0; }
-
-    /* Chop etishda jadval avvalgidek ko'rinadi */
-    table.grid { display: table; }
-    table.grid thead { display: table-header-group; }
-    table.grid tbody { display: table-row-group; }
-    table.grid tr { display: table-row; background: transparent; border: none; padding: 0; margin: 0; box-shadow: none; }
-    table.grid td { display: table-cell; width: auto; border: 1px solid #000; padding: 4px 6px; font-size: 12pt; text-align: center; }
-    table.grid td::before { content: none; }
+    #docPage { border: none; margin: 0; }
   }
 </style>
 </head>
 <body>
 
 <h1>Ma'lumotnoma (obektivka) tayyorlash</h1>
-<div class="hint">Formani to'ldiring — matn tanlangan tilga avtomatik o'giriladi. Kirill tanlasangiz, lotincha yozgan matningiz kirillga aylanadi va aksincha.</div>
+<div class="hint">Formani to'ldiring — matn tanlangan tilga avtomatik o'giriladi.</div>
 
 <div class="wrap">
   <div class="panel">
     <h2>Asosiy ma'lumotlar</h2>
 
     <label>Til / Язык / Тил</label>
-    <select id="langSelect" onchange="generate()">
+    <select id="langSelect">
       <option value="uz-latin">O'zbekcha (lotin)</option>
       <option value="uz-cyrillic">Ўзбекча (кирилл)</option>
       <option value="ru">Русский</option>
@@ -404,19 +378,19 @@
 
     <div class="section-title">Mehnat faoliyati</div>
     <div id="jobList"></div>
-    <button class="add-btn" onclick="addJob()">+ Mehnat faoliyati qo'shish</button>
+    <button class="add-btn" id="addJobBtn" type="button">+ Mehnat faoliyati qo'shish</button>
 
     <div class="section-title">Yaqin qarindoshlari</div>
     <div id="relList"></div>
-    <button class="add-btn secondary" onclick="addRel()">+ Yaqin qarindosh qo'shish</button>
+    <button class="add-btn secondary" id="addRelBtn" type="button">+ Yaqin qarindosh qo'shish</button>
 
-    <button class="gen-btn" onclick="generate()">Ma'lumotnomani shakllantirish</button>
+    <button class="gen-btn" id="genBtn" type="button">Ma'lumotnomani shakllantirish</button>
   </div>
 
   <div class="doc-outer">
     <div class="doc-toolbar">
-      <button onclick="window.print()">Chop etish</button>
-      <button id="pdfBtn" onclick="downloadPdf()">PDF yuklab olish</button>
+      <button type="button" onclick="window.print()">Chop etish</button>
+      <button type="button" id="pdfBtn">PDF yuklab olish</button>
     </div>
     <div class="doc-scroll">
       <div id="docPage">
@@ -430,7 +404,7 @@
 
 <template id="jobTpl">
   <div class="block">
-    <button class="rm" onclick="this.closest('.block').remove(); generate()">✕ o'chirish</button>
+    <button class="rm" type="button">✕ o'chirish</button>
     <label>Yillar (masalan: 2009 - 2012 yy.)</label>
     <input type="text" class="jobYears" placeholder="2009 - 2009 yy.">
     <label>Ish joyi, lavozimi (tavsif)</label>
@@ -440,7 +414,7 @@
 
 <template id="relTpl">
   <div class="block">
-    <button class="rm" onclick="this.closest('.block').remove(); generate()">✕ o'chirish</button>
+    <button class="rm" type="button">✕ o'chirish</button>
     <label>Qarindoshligi</label>
     <input type="text" class="relRelation" placeholder="Otasi">
     <label>Familiyasi, ismi, otasining ismi</label>
@@ -456,7 +430,7 @@
 
 <script>
 /* =========================================================
-   1) LOTIN <-> KIRILL TRANSLITERATSIYA
+   1) TRANSLITERATSIYA
    ========================================================= */
 const LOTIN_TO_KIRILL = {
   "o'": "ў", "O'": "Ў",
@@ -523,10 +497,8 @@ function latinToCyrillic(text) {
 
 function cyrillicToLatin(text) {
   if (!text) return '';
-  let result = text;
-  result = result.replace(/[ЎўҒғШшЧчЁёЮюЯяЦцЪъЬьа-яА-ЯҳҲқҚ]/g,
+  return text.replace(/[ЎўҒғШшЧчЁёЮюЯяЦцЪъЬьа-яА-ЯҳҲқҚ]/g,
     ch => KIRILL_TO_LOTIN[ch] !== undefined ? KIRILL_TO_LOTIN[ch] : ch);
-  return result;
 }
 
 function convertText(text, targetLang) {
@@ -626,77 +598,108 @@ const TRANSLATIONS = {
 };
 
 /* =========================================================
-   3) ASOSIY MANTIQ
+   3) YORDAMCHI FUNKSIYALAR
    ========================================================= */
 let photoDataUrl = null;
 
-document.getElementById('photoInput').addEventListener('change', function(e){
-  const file = e.target.files[0];
-  if (!file) { photoDataUrl = null; return; }
-  const reader = new FileReader();
-  reader.onload = function(ev){ photoDataUrl = ev.target.result; };
-  reader.readAsDataURL(file);
-});
-
-function addJob(){
-  const tpl = document.getElementById('jobTpl');
-  const clone = tpl.content.cloneNode(true);
-  document.getElementById('jobList').appendChild(clone);
-  generate();
-}
-
-function addRel(){
-  const tpl = document.getElementById('relTpl');
-  const clone = tpl.content.cloneNode(true);
-  document.getElementById('relList').appendChild(clone);
-  generate();
-}
-
-addJob();
-addRel();
-
-function esc(str){
+function esc(str) {
   const d = document.createElement('div');
   d.textContent = str || '';
   return d.innerHTML;
 }
 
-function nl2br(str){
+function nl2br(str) {
   return esc(str).replace(/\n/g, '<br>');
 }
 
-function generate(){
-  const v = id => document.getElementById(id).value.trim();
+function v(id) {
+  return document.getElementById(id).value.trim();
+}
+
+/* =========================================================
+   4) BLOK QO'SHISH / O'CHIRISH
+   ========================================================= */
+function addJob() {
+  const tpl = document.getElementById('jobTpl');
+  const clone = tpl.content.cloneNode(true);
+  const block = clone.querySelector('.block');
+
+  // O'chirish tugmasi
+  block.querySelector('.rm').addEventListener('click', () => {
+    block.remove();
+    generate();
+  });
+
+  // Input hodisalari
+  block.querySelectorAll('input, textarea').forEach(el => {
+    el.addEventListener('input', generate);
+  });
+
+  document.getElementById('jobList').appendChild(clone);
+  generate();
+}
+
+function addRel() {
+  const tpl = document.getElementById('relTpl');
+  const clone = tpl.content.cloneNode(true);
+  const block = clone.querySelector('.block');
+
+  block.querySelector('.rm').addEventListener('click', () => {
+    block.remove();
+    generate();
+  });
+
+  block.querySelectorAll('input, textarea').forEach(el => {
+    el.addEventListener('input', generate);
+  });
+
+  document.getElementById('relList').appendChild(clone);
+  generate();
+}
+
+/* =========================================================
+   5) GENERATE — asosiy render
+   ========================================================= */
+function generate() {
   const lang = document.getElementById('langSelect').value;
   const t = TRANSLATIONS[lang];
   const convert = (s) => convertText(s, lang);
 
+  // FIO
   const fioRaw = v('f1') || t.fioPlaceholder;
   const fio = convert(fioRaw);
   document.getElementById('outTitle').textContent = t.title;
   document.getElementById('outFio').textContent = fio;
 
-  const jobs = Array.from(document.querySelectorAll('#jobList .block')).map(b => ({
-    years: b.querySelector('.jobYears').value.trim(),
-    desc: b.querySelector('.jobDesc').value.trim()
-  })).filter(j => j.years || j.desc);
+  // Mehnat faoliyati — bo'sh bloklarni filtrlaymiz
+  const jobs = Array.from(document.querySelectorAll('#jobList .block'))
+    .map(b => ({
+      years: b.querySelector('.jobYears').value.trim(),
+      desc: b.querySelector('.jobDesc').value.trim()
+    }))
+    .filter(j => j.years || j.desc);
 
-  const rels = Array.from(document.querySelectorAll('#relList .block')).map(b => ({
-    relation: b.querySelector('.relRelation').value.trim(),
-    name: b.querySelector('.relName').value.trim(),
-    birth: b.querySelector('.relBirth').value.trim(),
-    job: b.querySelector('.relJob').value.trim(),
-    addr: b.querySelector('.relAddr').value.trim()
-  })).filter(r => r.relation || r.name || r.birth || r.job || r.addr);
+  // Qarindoshlar — bo'sh bloklarni filtrlaymiz
+  const rels = Array.from(document.querySelectorAll('#relList .block'))
+    .map(b => ({
+      relation: b.querySelector('.relRelation').value.trim(),
+      name: b.querySelector('.relName').value.trim(),
+      birth: b.querySelector('.relBirth').value.trim(),
+      job: b.querySelector('.relJob').value.trim(),
+      addr: b.querySelector('.relAddr').value.trim()
+    }))
+    .filter(r => r.relation || r.name || r.birth || r.job || r.addr);
 
   let html = '';
 
-  if (photoDataUrl){
+  // Foto
+  if (photoDataUrl) {
     html += `<div class="photo-box"><img src="${photoDataUrl}" alt="foto"></div>`;
   } else {
     html += `<div class="photo-box">${t.photo}</div>`;
   }
 
+  // Asosiy ma'lumotlar jadvali
   html += `<table class="info">
     <tr><td colspan="2">${nl2br(convert(v('f2')))}</td></tr>
     <tr>
@@ -730,20 +733,27 @@ function generate(){
     </tr>
   </table>`;
 
+  // Mehnat faoliyati jadvali
   html += `<p class="section-heading">${t.jobHeading}</p>`;
   html += `<table class="plain">`;
-  if (jobs.length === 0){
-    html += `<tr><td class="years"></td><td></td></tr>`;
+  if (jobs.length === 0) {
+    // Faqat BITTA bo'sh qator — va faqat hech qanday to'ldirilgan blok bo'lmasa
+    html += `<tr><td class="years">&nbsp;</td><td>&nbsp;</td></tr>`;
   } else {
     jobs.forEach(j => {
-      html += `<tr><td class="years">${esc(convert(j.years))}</td><td>${nl2br(convert(j.desc))}</td></tr>`;
+      html += `<tr>
+        <td class="years">${esc(convert(j.years))}</td>
+        <td>${nl2br(convert(j.desc))}</td>
+      </tr>`;
     });
   }
   html += `</table>`;
 
+  // Qarindoshlar sarlavhasi
   html += `<p class="section-heading">${esc(t.relativesHeading(fio))}</p>`;
   html += `<p class="section-heading">${t.infoHeading}</p>`;
 
+  // Qarindoshlar jadvali
   html += `<table class="grid">
     <thead>
       <tr>
@@ -755,7 +765,8 @@ function generate(){
       </tr>
     </thead>
     <tbody>`;
-  if (rels.length === 0){
+  if (rels.length === 0) {
+    // Faqat BITTA bo'sh qator
     html += `<tr>
       <td data-label="${t.thRelation}">&nbsp;</td>
       <td data-label="${t.thName}">&nbsp;</td>
@@ -779,14 +790,41 @@ function generate(){
   document.getElementById('outBody').innerHTML = html;
 }
 
-generate();
-
-document.querySelectorAll('input[type=text], textarea').forEach(el => {
-  el.addEventListener('input', generate);
+/* =========================================================
+   6) FOTO YUKLASH
+   ========================================================= */
+document.getElementById('photoInput').addEventListener('change', function (e) {
+  const file = e.target.files[0];
+  if (!file) {
+    photoDataUrl = null;
+    generate();
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function (ev) {
+    photoDataUrl = ev.target.result;
+    generate();
+  };
+  reader.readAsDataURL(file);
 });
-document.getElementById('jobList').addEventListener('input', generate);
-document.getElementById('relList').addEventListener('input', generate);
 
+/* =========================================================
+   7) TUGMALARNI ULASH
+   ========================================================= */
+document.getElementById('addJobBtn').addEventListener('click', addJob);
+document.getElementById('addRelBtn').addEventListener('click', addRel);
+document.getElementById('genBtn').addEventListener('click', generate);
+document.getElementById('langSelect').addEventListener('change', generate);
+
+// Asosiy matn maydonlariga input hodisalari
+['f1','f2','f3','f4','f5','f6','f7','f8','f9','f10','f11','f12','f13','f14']
+  .forEach(id => {
+    document.getElementById(id).addEventListener('input', generate);
+  });
+
+/* =========================================================
+   8) PDF YUKLASH (telefonda ishlaydigan versiya)
+   ========================================================= */
 async function downloadPdf() {
   const btn = document.getElementById('pdfBtn');
   const original = btn.textContent;
@@ -797,11 +835,9 @@ async function downloadPdf() {
   const fileName = fioVal.replace(/[^\p{L}\p{N}]+/gu, '_') + '.pdf';
 
   const source = document.getElementById('docPage');
-
-  // ===== 1) Klon yaratish =====
   const clone = source.cloneNode(true);
 
-  // ===== 2) Klonni ekranda ko'rinadigan overlay ichiga joylashtirish =====
+  // Overlay — klonni ekranda ko'rinadigan qilib joylashtiramiz
   const overlay = document.createElement('div');
   overlay.style.cssText = [
     'position:fixed',
@@ -816,7 +852,7 @@ async function downloadPdf() {
     'pointer-events:none'
   ].join(';');
 
-  // Klon o'lchamlarini A4 pikselda qat'iy belgilash (96 dpi)
+  // Klon o'lchamlarini A4 pikselda belgilash
   clone.style.width = '794px';
   clone.style.minHeight = '1123px';
   clone.style.margin = '0';
@@ -830,7 +866,7 @@ async function downloadPdf() {
   clone.style.lineHeight = '1.25';
   clone.style.color = '#000';
 
-  // Foto joylashuvini klonda qayta tiklash
+  // Foto joylashuvini tiklash
   const photoBox = clone.querySelector('.photo-box');
   if (photoBox) {
     photoBox.style.position = 'absolute';
@@ -840,7 +876,7 @@ async function downloadPdf() {
     photoBox.style.height = '151px';
   }
 
-  // Jadval chegaralarini klonda tiklash (mobil kartaga aylanishni bekor qilish)
+  // Jadvalni PDF rejimida tiklash (mobil kartaga aylanishni bekor qilish)
   clone.querySelectorAll('table.grid').forEach(tbl => {
     tbl.style.display = 'table';
     tbl.style.width = '100%';
@@ -871,14 +907,7 @@ async function downloadPdf() {
     cell.style.verticalAlign = 'middle';
   });
 
-  // `::before` yorliqlarini olib tashlash uchun inline style ishlamaydi,
-  // shuning uchun klonni maxsus klass bilan belgilaymiz va CSS qo'shamiz
-  clone.classList.add('pdf-export-mode');
-
-  overlay.appendChild(clone);
-  document.body.appendChild(overlay);
-
-  // ===== 3) PDF eksport rejimi uchun CSS qo'shish =====
+  // `::before` yorliqlarini PDF'da olib tashlash
   const styleEl = document.createElement('style');
   styleEl.id = 'pdfExportStyle';
   styleEl.textContent = `
@@ -886,9 +915,13 @@ async function downloadPdf() {
     .pdf-export-mode table.info td { display: table-cell !important; width: 50% !important; }
     .pdf-export-mode table.info tr { display: table-row !important; }
   `;
+  clone.classList.add('pdf-export-mode');
   document.head.appendChild(styleEl);
 
-  // ===== 4) Rasmlar yuklanishini kutish =====
+  overlay.appendChild(clone);
+  document.body.appendChild(overlay);
+
+  // Rasmlar yuklanishini kutish
   const images = clone.querySelectorAll('img');
   await Promise.all(Array.from(images).map(img => {
     if (img.complete && img.naturalWidth > 0) return Promise.resolve();
@@ -899,11 +932,10 @@ async function downloadPdf() {
     });
   }));
 
-  // ===== 5) Qo'shimcha kutish (render tugashi uchun) =====
+  // Render tugashi uchun qisqa kutish
   await new Promise(r => setTimeout(r, 200));
 
   try {
-    // ===== 6) html2canvas =====
     const canvas = await html2canvas(clone, {
       scale: 2,
       useCORS: true,
@@ -920,12 +952,10 @@ async function downloadPdf() {
       logging: false
     });
 
-    // ===== 7) Canvas bo'shligini tekshirish =====
     if (!canvas.width || !canvas.height) {
-      throw new Error('Canvas bo\'sh yaratildi. Element ko\'rinmayapti.');
+      throw new Error('Canvas bo\'sh yaratildi.');
     }
 
-    // ===== 8) PDF yaratish =====
     const imgData = canvas.toDataURL('image/jpeg', 0.95);
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'a4');
@@ -951,7 +981,6 @@ async function downloadPdf() {
     console.error('PDF xatosi:', err);
     alert('PDF yaratishda xatolik: ' + (err.message || err));
   } finally {
-    // ===== 9) Tozalash =====
     if (document.body.contains(overlay)) document.body.removeChild(overlay);
     const s = document.getElementById('pdfExportStyle');
     if (s) s.remove();
@@ -959,6 +988,15 @@ async function downloadPdf() {
     btn.disabled = false;
   }
 }
+
+document.getElementById('pdfBtn').addEventListener('click', downloadPdf);
+
+/* =========================================================
+   9) BOSHLANG'ICH ISHGA TUSHIRISH
+   ========================================================= */
+addJob();
+addRel();
+generate();
 </script>
 
 </body>

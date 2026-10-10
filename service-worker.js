@@ -3,8 +3,8 @@ const ASSETS = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./icons/logo2.png",
-  "./icons/logo2.png"
+  "./icons/logo3.png",
+  "./icons/logo3.png"
 ];
 
 // ===== O'rnatish =====
